@@ -5,13 +5,20 @@ public class Main {
         Arvore arvore = new Arvore();
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("Árvore Morse construída:\n");
-        arvore.imprimirArvore();
+        arvore.imprimirArvoreLetras();
+        arvore.imprimirArvoreMorse();
 
-        System.out.println("\nDigite o código Morse (separe letras com espaço):");
-        String entrada = sc.nextLine().toUpperCase();
+        System.out.println("Digite texto (A-Z) ou código Morse (com . e -):");
+        String entrada = sc.nextLine().toUpperCase().trim();
 
-        System.out.println("\nPalavra decodificada: " + arvore.decodificar(entrada));
+        if (entrada.matches("[\\.\\-\\s]+")) {
+
+            System.out.println("→ Decodificado: " + arvore.decodificar(entrada));
+        } else {
+
+            System.out.println("→ Em código Morse: " + arvore.codificar(entrada));
+        }
+
         sc.close();
     }
 }

@@ -1,6 +1,7 @@
+import java.util.HashMap;
 import java.util.Map;
 
-public class Arvore{
+public class Arvore {
     private final Node root = new Node('*');
     private static final Map<Character, String> MORSE_CODE = Map.ofEntries(
             Map.entry('A', ".-"),   Map.entry('B', "-..."), Map.entry('C', "-.-."),
@@ -14,8 +15,11 @@ public class Arvore{
             Map.entry('Y', "-.--"), Map.entry('Z', "--..")
     );
 
+    private final Map<Character, String> inverso = new HashMap<>();
+
     public Arvore() {
         MORSE_CODE.forEach(this::inserir);
+        inverso.putAll(MORSE_CODE); // cria mapa reverso
     }
 
     /** Insere uma letra na árvore conforme o código Morse */
@@ -42,6 +46,19 @@ public class Arvore{
         return palavra.toString();
     }
 
+    /** Codifica texto normal em código Morse */
+    public String codificar(String texto) {
+        StringBuilder morse = new StringBuilder();
+        for (char c : texto.toUpperCase().toCharArray()) {
+            if (c == ' ') {
+                morse.append("   "); // separação entre palavras
+            } else if (inverso.containsKey(c)) {
+                morse.append(inverso.get(c)).append(" ");
+            }
+        }
+        return morse.toString().trim();
+    }
+
     /** Decodifica uma única letra em Morse */
     private char decodificarLetra(String codigo) {
         Node atual = root;
@@ -52,9 +69,18 @@ public class Arvore{
         return atual.letter;
     }
 
-    /** Imprime a árvore de forma hierárquica no console */
-    public void imprimirArvore() {
+    /** Imprime a árvore em letras */
+    public void imprimirArvoreLetras() {
+        System.out.println("===== ÁRVORE MORSE (LETRAS) =====");
         imprimirRec(root, 0);
+        System.out.println("=================================\n");
+    }
+
+    /** Imprime a árvore mostrando o código Morse de cada letra */
+    public void imprimirArvoreMorse() {
+        System.out.println("===== ÁRVORE MORSE (LETRA + CÓDIGO) =====");
+        imprimirRecMorse(root, "", 0);
+        System.out.println("==========================================\n");
     }
 
     private void imprimirRec(Node no, int nivel) {
@@ -63,5 +89,14 @@ public class Arvore{
         System.out.println("  ".repeat(nivel) + no.letter);
         imprimirRec(no.left, nivel + 1);
     }
-}
 
+    private void imprimirRecMorse(Node no, String codigo, int nivel) {
+        if (no == null) return;
+        imprimirRecMorse(no.right, codigo + "-", nivel + 1);
+        if (no.letter != '*')
+            System.out.println("  ".repeat(nivel) + no.letter + " (" + MORSE_CODE.get(no.letter) + ")");
+        else
+            System.out.println("  ".repeat(nivel) + "*");
+        imprimirRecMorse(no.left, codigo + ".", nivel + 1);
+    }
+}

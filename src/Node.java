@@ -1,4 +1,4 @@
-public class Node {
+class Node {
     char letter;
     Node left;   // ponto (.)
     Node right;  // traço (-)
