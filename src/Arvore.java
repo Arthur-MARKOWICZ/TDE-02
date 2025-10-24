@@ -1,98 +1,67 @@
+import java.util.Map;
 
-public class Arvore<TIPO extends Comparable<TIPO>> {
-    private No<TIPO> raiz;
+public class Arvore{
+    private final Node root = new Node('*');
+    private static final Map<Character, String> MORSE_CODE = Map.ofEntries(
+            Map.entry('A', ".-"),   Map.entry('B', "-..."), Map.entry('C', "-.-."),
+            Map.entry('D', "-.."),  Map.entry('E', "."),    Map.entry('F', "..-."),
+            Map.entry('G', "--."),  Map.entry('H', "...."), Map.entry('I', ".."),
+            Map.entry('J', ".---"), Map.entry('K', "-.-"),  Map.entry('L', ".-.."),
+            Map.entry('M', "--"),   Map.entry('N', "-."),   Map.entry('O', "---"),
+            Map.entry('P', ".--."), Map.entry('Q', "--.-"), Map.entry('R', ".-."),
+            Map.entry('S', "..."),  Map.entry('T', "-"),    Map.entry('U', "..-"),
+            Map.entry('V', "...-"), Map.entry('W', ".--"),  Map.entry('X', "-..-"),
+            Map.entry('Y', "-.--"), Map.entry('Z', "--..")
+    );
 
     public Arvore() {
-        this.raiz = null;
+        MORSE_CODE.forEach(this::inserir);
     }
 
-    public No<TIPO> getRaiz() { return raiz; }
+    /** Insere uma letra na árvore conforme o código Morse */
+    private void inserir(char letra, String codigo) {
+        Node atual = root;
+        for (char simbolo : codigo.toCharArray()) {
+            if (simbolo == '.') {
+                if (atual.left == null) atual.left = new Node('*');
+                atual = atual.left;
+            } else {
+                if (atual.right == null) atual.right = new Node('*');
+                atual = atual.right;
+            }
+        }
+        atual.letter = letra;
+    }
 
+    /** Decodifica uma sequência Morse (letras separadas por espaço) */
+    public String decodificar(String entrada) {
+        StringBuilder palavra = new StringBuilder();
+        for (String cod : entrada.trim().split(" ")) {
+            palavra.append(decodificarLetra(cod));
+        }
+        return palavra.toString();
+    }
+
+    /** Decodifica uma única letra em Morse */
+    private char decodificarLetra(String codigo) {
+        Node atual = root;
+        for (char simbolo : codigo.toCharArray()) {
+            atual = (simbolo == '.') ? atual.left : atual.right;
+            if (atual == null) return '?';
+        }
+        return atual.letter;
+    }
+
+    /** Imprime a árvore de forma hierárquica no console */
     public void imprimirArvore() {
-        imprimirArvore(this.raiz, 0);
+        imprimirRec(root, 0);
     }
 
-    private void imprimirArvore(No<TIPO> no, int nivel) {
+    private void imprimirRec(Node no, int nivel) {
         if (no == null) return;
-
-        imprimirArvore(no.getDireita(), nivel + 1);
-
-        for (int i = 0; i < nivel; i++) {
-            System.out.print("   ");
-        }
-        System.out.println(no.getValor());
-
-        imprimirArvore(no.getEsquerda(), nivel + 1);
+        imprimirRec(no.right, nivel + 1);
+        System.out.println("  ".repeat(nivel) + no.letter);
+        imprimirRec(no.left, nivel + 1);
     }
-
-
-    public void adicionar(TIPO valor) {
-        No<TIPO> novoNo = new No<>(valor);
-        if (raiz == null) {
-            raiz = novoNo;
-            return;
-        }
-        No<TIPO> atual = raiz;
-        No<TIPO> pai = null;
-        while (true) {
-            pai = atual;
-            int cmp = valor.compareTo(atual.getValor());
-            if (cmp < 0) { // vai para esquerda
-                atual = atual.getEsquerda();
-                if (atual == null) {
-                    pai.setEsquerda(novoNo);
-                    return;
-                }
-            } else { // >= vai para direita
-                atual = atual.getDireita();
-                if (atual == null) {
-                    pai.setDireita(novoNo);
-                    return;
-                }
-            }
-        }
-    }
-
-    public boolean remover(TIPO valor) {
-        No<TIPO> atual = raiz;
-        No<TIPO> pai = null;
-
-       
-        while (atual != null) {
-            int cmp = valor.compareTo(atual.getValor());
-            if (cmp == 0) break;
-            pai = atual;
-            if (cmp < 0) atual = atual.getEsquerda();
-            else atual = atual.getDireita();
-        }
-
-        if (atual == null) return false;
-
-        
-        if (atual.getEsquerda() != null && atual.getDireita() != null) {
-            No<TIPO> succ = atual.getDireita();
-            No<TIPO> paiSucc = atual;
-            while (succ.getEsquerda() != null) {
-                paiSucc = succ;
-                succ = succ.getEsquerda();
-            }
-            atual.setValor(succ.getValor());
-            pai = paiSucc;
-            atual = succ;
-        }
-
-      
-        No<TIPO> filho = (atual.getEsquerda() != null) ? atual.getEsquerda() : atual.getDireita();
-
-        if (pai == null) {
-            raiz = filho;
-        } else if (pai.getEsquerda() == atual) {
-            pai.setEsquerda(filho);
-        } else {
-            pai.setDireita(filho);
-        }
-
-        return true;
-    }
-
 }
+
