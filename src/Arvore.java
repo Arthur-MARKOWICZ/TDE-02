@@ -19,10 +19,9 @@ public class Arvore {
 
     public Arvore() {
         MORSE_CODE.forEach(this::inserir);
-        inverso.putAll(MORSE_CODE); // cria mapa reverso
+        inverso.putAll(MORSE_CODE);
     }
 
-    /** Insere uma letra na árvore conforme o código Morse */
     private void inserir(char letra, String codigo) {
         Node atual = root;
         for (char simbolo : codigo.toCharArray()) {
@@ -37,7 +36,6 @@ public class Arvore {
         atual.letter = letra;
     }
 
-    /** Decodifica uma sequência Morse (letras separadas por espaço) */
     public String decodificar(String entrada) {
         StringBuilder palavra = new StringBuilder();
         for (String cod : entrada.trim().split(" ")) {
@@ -46,12 +44,11 @@ public class Arvore {
         return palavra.toString();
     }
 
-    /** Codifica texto normal em código Morse */
     public String codificar(String texto) {
         StringBuilder morse = new StringBuilder();
         for (char c : texto.toUpperCase().toCharArray()) {
             if (c == ' ') {
-                morse.append("   "); // separação entre palavras
+                morse.append("   ");
             } else if (inverso.containsKey(c)) {
                 morse.append(inverso.get(c)).append(" ");
             }
@@ -59,44 +56,88 @@ public class Arvore {
         return morse.toString().trim();
     }
 
-    /** Decodifica uma única letra em Morse */
     private char decodificarLetra(String codigo) {
         Node atual = root;
-        for (char simbolo : codigo.toCharArray()) {
+        for (int i = 0; i < codigo.length(); i++) {
+            char simbolo = codigo.charAt(i);
+            if (simbolo != '.' && simbolo != '-') {
+                System.out.println("[ERRO] Símbolo inválido '" + simbolo + "' no código: " + codigo);
+                return '?';
+            }
             atual = (simbolo == '.') ? atual.left : atual.right;
-            if (atual == null) return '?';
+            if (atual == null) {
+                System.out.println("[ERRO] Caminho inválido no código Morse: " + codigo.substring(0, i+1));
+                return '?';
+            }
         }
         return atual.letter;
     }
 
-    /** Imprime a árvore em letras */
     public void imprimirArvoreLetras() {
-        System.out.println("===== ÁRVORE MORSE (LETRAS) =====");
-        imprimirRec(root, 0);
-        System.out.println("=================================\n");
+        System.out.println("===== ÁRVORE MORSE (SOMENTE LETRAS) =====");
+        imprimirLetras(root, "", true);
+        System.out.println("=========================================\n");
     }
 
-    /** Imprime a árvore mostrando o código Morse de cada letra */
-    public void imprimirArvoreMorse() {
-        System.out.println("===== ÁRVORE MORSE (LETRA + CÓDIGO) =====");
-        imprimirRecMorse(root, "", 0);
+    public void imprimirArvoreMista() {
+        System.out.println("===== ÁRVORE MORSE (LETRA + CÓDIGO MORSE) =====");
+        imprimirMista(root, "", true, "");
         System.out.println("==========================================\n");
     }
 
-    private void imprimirRec(Node no, int nivel) {
-        if (no == null) return;
-        imprimirRec(no.right, nivel + 1);
-        System.out.println("  ".repeat(nivel) + no.letter);
-        imprimirRec(no.left, nivel + 1);
+    public void imprimirArvoreMorse() {
+        System.out.println("===== ÁRVORE MORSE (SOMENTE CÓDIGO MORSE) =====");
+        imprimirMorse(root, "", true, "");
+        System.out.println("============================================\n");
     }
 
-    private void imprimirRecMorse(Node no, String codigo, int nivel) {
+    private void imprimirLetras(Node no, String prefixo, boolean ultimo) {
         if (no == null) return;
-        imprimirRecMorse(no.right, codigo + "-", nivel + 1);
-        if (no.letter != '*')
-            System.out.println("  ".repeat(nivel) + no.letter + " (" + MORSE_CODE.get(no.letter) + ")");
-        else
-            System.out.println("  ".repeat(nivel) + "*");
-        imprimirRecMorse(no.left, codigo + ".", nivel + 1);
+        System.out.println(prefixo + (ultimo ? "└─" : "├─") + (no.letter == '*' ? "*" : no.letter));
+
+        String novoPrefixo = prefixo + (ultimo ? "  " : "│ ");
+        if (no.left != null || no.right != null) {
+            if (no.right != null && no.left != null) {
+                imprimirLetras(no.right, novoPrefixo, false);
+                imprimirLetras(no.left, novoPrefixo, true);
+            } else if (no.right != null)
+                imprimirLetras(no.right, novoPrefixo, true);
+            else
+                imprimirLetras(no.left, novoPrefixo, true);
+        }
+    }
+
+    private void imprimirMista(Node no, String prefixo, boolean ultimo, String codigo) {
+        if (no == null) return;
+        String conteudo = (no.letter == '*') ? "*" : no.letter + " (" + codigo + ")";
+        System.out.println(prefixo + (ultimo ? "└─" : "├─") + conteudo);
+
+        String novoPrefixo = prefixo + (ultimo ? "  " : "│ ");
+        if (no.left != null || no.right != null) {
+            if (no.right != null && no.left != null) {
+                imprimirMista(no.right, novoPrefixo, false, codigo + "-");
+                imprimirMista(no.left, novoPrefixo, true, codigo + ".");
+            } else if (no.right != null)
+                imprimirMista(no.right, novoPrefixo, true, codigo + "-");
+            else
+                imprimirMista(no.left, novoPrefixo, true, codigo + ".");
+        }
+    }
+
+    private void imprimirMorse(Node no, String prefixo, boolean ultimo, String codigo) {
+        if (no == null) return;
+        String conteudo = codigo.isEmpty() ? "*" : codigo;
+        System.out.println(prefixo + (ultimo ? "└─" : "├─") + conteudo);
+
+        String novoPrefixo = prefixo + (ultimo ? "  " : "│ ");
+        if (no.left != null || no.right != null) {
+            if (no.right != null && no.left != null) {
+                imprimirMorse(no.right, novoPrefixo, false, codigo + "-");
+                imprimirMorse(no.left, novoPrefixo, true, codigo + ".");
+            } else if (no.right != null)
+                imprimirMorse(no.right, novoPrefixo, true, codigo + "-");
+            else
+                imprimirMorse(no.left, novoPrefixo, true, codigo + ".");
+        }
     }
 }
