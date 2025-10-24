@@ -94,5 +94,10 @@ public class Arvore<TIPO extends Comparable<TIPO>> {
 
         return true;
     }
-
+    public String decodificarLetra(String codigo){
+        return ;
+    }
+    public String decodificarMensagem(String codigo){
+        return ;
+    }
 }
